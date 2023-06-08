@@ -68,6 +68,10 @@ while not check_win(board, 0) and not check_win(board, 1) and any(-1 in row for 
             row, col = move
         else:
             break
+        # Update the board with AI's move
+        board[row][col] = current_player
+        # Print the board after AI's move
+        print_board(board)
     else:  # else, it's the human player's turn
         valid_move = False
         while not valid_move:
@@ -89,12 +93,8 @@ while not check_win(board, 0) and not check_win(board, 1) and any(-1 in row for 
                 print("Invalid move. That spot is already taken.")
                 continue
             valid_move = True
-
-    # Update the board
-    board[row][col] = current_player
-
-    # Print the board
-    print_board(board)
+        # Update the board with player's move
+        board[row][col] = current_player
 
     # Switch to the other player
     current_player = (current_player + 1) % 2
@@ -106,4 +106,5 @@ elif check_win(board, 1):
     print("Player X wins!")
 else:
     print("Tie game.")
+
 
