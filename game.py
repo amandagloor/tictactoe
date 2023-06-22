@@ -1,84 +1,89 @@
-# Define a function to print the board
-def print_board(board):
-    print("  0 1 2")
-    for i in range(3):
-        row_str = str(i) + " "
-        for j in range(3):
-            if board[i][j] == -1:
-                row_str += " "
-            elif board[i][j] == 0:
-                row_str += "O"
-            else:
-                row_str += "X"
-            if j < 2:
-                row_str += "|"
-        print(row_str)
-        if i < 2:
-            print("  -----")
+from random import randrange
 
-# Define a function to check if someone has won
-def check_win(board, player):
-    # Check rows
+board = [[1, 2, 3], [4, 'X', 6], [7, 8, 9]]
+
+def display_board(board):
+    # The function accepts one parameter containing the board's current status
+    # and prints it out to the console.
+    print("+-------+-------+-------+")
+    for row in board: 
+        print("|       |       |       |")
+        print(f"|   {row[0]}   |   {row[1]}   |   {row[2]}   |")
+        print("|       |       |       |")
+        print("+-------+-------+-------+")
+        
+def enter_move(board):
+    # The function accepts the board's current status, asks the user about their move, 
+    # checks the input, and updates the board according to the user's decision.
+    while True:
+        move = input("Enter Move: ")    # ask player for input
+        if move.isdigit() and 1 <= int(move) <= 9:    # check for valid input
+            row = (int(move) - 1) // 3    # Find input row, column
+            col = (int(move) - 1) % 3
+            if board[row][col] == 'O' or  board[row][col] == 'X':    # valid move check
+                print("Invalid move. Please try again.")
+            else:
+                board[row][col] = 'O'    # insert move
+                break
+        else: 
+            print("Invalid move. Please try again.")
+
+def make_list_of_free_fields(board):
+    # The function browses the board and builds a list of all the free squares; 
+    # the list consists of tuples, while each tuple is a pair of row and column numbers.
+    free_fields = []    # create list of available moves
     for i in range(3):
-        if board[i][0] == player and board[i][1] == player and board[i][2] == player:
+        for j in range(3):
+            if board[i][j] != 'O' and board[i][j] != 'X':    # add available moves to list
+                free_fields.append((i, j))
+    return free_fields
+
+def victory_for(board, sign):
+    # The function analyzes the board's status in order to check if 
+    # the player using 'O's or 'X's has won the game  
+    for row in board:   # Check rows
+        if row[0] == row[1] == row[2] == sign:
             return True
-    # Check columns
-    for j in range(3):
-        if board[0][j] == player and board[1][j] == player and board[2][j] == player:
+    for col in range(3):    # Check columns
+        if board[0][col] == board[1][col] == board[2][col] == sign:
             return True
-    # Check diagonals
-    if board[0][0] == player and board[1][1] == player and board[2][2] == player:
+    if board[0][0] == board[1][1] == board[2][2] == sign:   # Check diagonals
         return True
-    if board[0][2] == player and board[1][1] == player and board[2][0] == player:
+    if board[0][2] == board[1][1] == board[2][0] == sign:
+        return True
+
+def tie(board):
+    free_fields = make_list_of_free_fields(board)   # Check for a tie
+    if not free_fields:
         return True
     return False
 
-# Initialize the board
-board = [[-1, -1, -1], [-1, -1, -1], [-1, -1, -1]]
+def draw_move(board):
+    # The function draws the computer's move and updates the board. 
+    free_fields = make_list_of_free_fields(board)    # create updated free fields list
+    if free_fields: 
+        index = randrange(len(free_fields))    # generate random index number to choose move from list
+        row, col = free_fields[index]
+        board[row][col] = 'X'    # insert move
 
-# Define the players
-players = {0: "O", 1: "X"}
+while True:
+    display_board(board)    # console displays board with available moves for player
+    
+    enter_move(board)    # prompts player for a move
+    
+    if victory_for(board, 'O'):    # checks if player won
+        display_board(board)
+        print("You won!")
+        break    # Ends game when player wins
+       
+    draw_move(board)    # CPU takes its turn 
 
-# Define the current player
-current_player = 0
+    if tie(board):
+        display_board(board)
+        print("It's a tie!")    # checks for a tie
+        break
 
-# Print the board
-print_board(board)
-
-# Loop until someone wins or the board is full
-while not check_win(board, 0) and not check_win(board, 1) and any(-1 in row for row in board):
-    # Get the current player's move
-    valid_move = False
-    while not valid_move:
-        move_str = input("Player " + players[current_player] + ", enter your move (row column): ")
-        move = move_str.split()
-        if len(move) != 2:
-            print("Invalid move. Please enter your move in the format 'row column'.")
-            continue
-        try:
-            row = int(move[0])
-            col = int(move[1])
-        except ValueError:
-            print("Invalid move. Please enter your move as two integers separated by a space.")
-            continue
-        if row < 0 or row > 2 or col < 0 or col > 2:
-            print("Invalid move. Please enter a row and column between 0 and 2.")
-            continue
-        if board[row][col] != -1:
-            print("Invalid move. That spot is already taken.")
-            continue
-        valid_move = True
-    # Update the board
-    board[row][col] = current_player
-    # Print the board
-    print_board(board)
-    # Switch to the other player
-    current_player = (current_player + 1) % 2
-
-# Check who won or if it was a tie
-if check_win(board, 0):
-    print("Player O wins!")
-elif check_win(board, 1):
-    print("Player X wins!")
-else:
-    print("Tie game.")
+    if victory_for(board, 'X'):    # checks if CPU won
+        display_board(board)
+        print("The computer won!")
+        break # ends game when CPU wins
